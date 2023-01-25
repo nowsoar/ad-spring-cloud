@@ -25,7 +25,7 @@ public class AdCreativeServiceImpl implements AdCreativeService {
 
 
     @Override
-    public CreativeResponse creativeResponse(CreativeRequest request) throws AdException {
+    public CreativeResponse createCreative(CreativeRequest request) throws AdException {
         AdCreative creative = creativeRepository.save(
                 request.convertToEntity()
         );

@@ -11,5 +11,5 @@ import github.zkpgeeker.ad.vo.CreativeResponse;
  */
 public interface AdCreativeService {
 
-    CreativeResponse creativeResponse(CreativeRequest request) throws AdException;
+    CreativeResponse createCreative(CreativeRequest request) throws AdException;
 }
