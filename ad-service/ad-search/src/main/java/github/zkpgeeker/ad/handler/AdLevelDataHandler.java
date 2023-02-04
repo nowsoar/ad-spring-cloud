@@ -1,10 +1,7 @@
 package github.zkpgeeker.ad.handler;
 
 import com.alibaba.fastjson.JSON;
-import github.zkpgeeker.ad.dump.table.AdCreativeTable;
-import github.zkpgeeker.ad.dump.table.AdCreativeUnitTable;
-import github.zkpgeeker.ad.dump.table.AdPlanTable;
-import github.zkpgeeker.ad.dump.table.AdUnitTable;
+import github.zkpgeeker.ad.dump.table.*;
 import github.zkpgeeker.ad.index.DataTable;
 import github.zkpgeeker.ad.index.IndexAware;
 import github.zkpgeeker.ad.index.adplan.AdPlanIndex;
@@ -15,9 +12,14 @@ import github.zkpgeeker.ad.index.creative.CreativeIndex;
 import github.zkpgeeker.ad.index.creative.CreativeObject;
 import github.zkpgeeker.ad.index.creativeunit.CreativeUnitIndex;
 import github.zkpgeeker.ad.index.creativeunit.CreativeUnitObject;
+import github.zkpgeeker.ad.index.district.UnitDistrictIndex;
 import github.zkpgeeker.ad.mysql.constant.OpType;
 import github.zkpgeeker.ad.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @description:
@@ -111,6 +113,77 @@ public class AdLevelDataHandler {
                 creativeUnitObject,
                 type
         );
+    }
+
+    public static void handleLevel4(AdUnitDistrictTable unitDistrictTable,
+                                    OpType type) {
+        if (type == OpType.UPDATE) {
+            log.error("district index does not support update");
+            return;
+        }
+        AdUnitObject unitObject = DataTable.of(AdUnitIndex.class)
+                .get(unitDistrictTable.getUnitId());
+        if (null == unitObject) {
+            log.error("AdUnitDistrictTable index error: {}",
+                    unitDistrictTable.getUnitId());
+        }
+        String key = CommonUtils.stringConcat(unitDistrictTable.getProvince(),
+                unitDistrictTable.getCity());
+        Set<Long> value = new HashSet<>(
+                Collections.singleton(unitDistrictTable.getUnitId())
+        );
+        handleBinlogEvent(
+                DataTable.of(UnitDistrictIndex.class),
+                key,
+                value,
+                type
+        );
+    }
+
+    public static void handleLevel4(AdUnitItTable unitItTable,
+                                    OpType type) {
+        if (type == OpType.UPDATE) {
+            log.error("Interest index does not support update");
+            return;
+        }
+        AdUnitObject unitObject = DataTable.of(AdUnitIndex.class)
+                .get(unitItTable.getUnitId());
+        if (null == unitObject) {
+            log.error("AdUnitIttTable index error: {}",
+                    unitItTable.getUnitId());
+            return;
+        }
+        Set<Long> value = new HashSet<>(
+                Collections.singleton(unitItTable.getUnitId())
+        );
+        handleBinlogEvent(
+                DataTable.of(UnitDistrictIndex.class),
+                unitItTable.getItTag(),
+                value,
+                type
+        );
+    }
+
+    public static void handleLevel4(AdUnitKeywordTable unitKeywordTable,
+                                    OpType type) {
+        if (type == OpType.UPDATE) {
+            log.error("Keyword index does not support update");
+            return;
+        }
+        AdUnitObject unitObject = DataTable.of(AdUnitIndex.class)
+                .get(unitKeywordTable.getUnitId());
+        if (null == unitObject) {
+            log.error("AdUnitKeywordTable index error: {}",
+                    unitKeywordTable.getUnitId());
+        }
+        Set<Long> value = new HashSet<>(
+                Collections.singleton(unitKeywordTable.getUnitId())
+        );
+        handleBinlogEvent(
+                DataTable.of(UnitDistrictIndex.class),
+                unitKeywordTable.getKeyword(),
+                value,
+                type);
     }
 
     private static <K, V> void handleBinlogEvent(IndexAware<K, V> index,
