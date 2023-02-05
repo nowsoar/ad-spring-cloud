@@ -22,6 +22,7 @@ public class BinlogServiceTest {
                 "root",
                 "root"
         );
+        client.setBinlogFilename("binlog.000037");
 
         client.registerEventListener(event -> {
 
