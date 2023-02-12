@@ -18,7 +18,7 @@ public class BinlogServiceTest {
 
         BinaryLogClient client = new BinaryLogClient(
                 "127.0.0.1",
-                3306,
+                3307,
                 "root",
                 "root"
         );
