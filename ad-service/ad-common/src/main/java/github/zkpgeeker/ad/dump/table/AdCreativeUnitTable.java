@@ -16,5 +16,5 @@ public class AdCreativeUnitTable {
 
     private Long adId;
 
-    private Long uintID;
+    private Long unitId;
 }
