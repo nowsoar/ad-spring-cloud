@@ -66,5 +66,6 @@ public class IncrementListener implements Ilistener {
             }
             rowData.getFieldValueMap().add(_afterMap);
         }
+        sender.send(rowData);
     }
 }
