@@ -1,18 +1,18 @@
 package github.zkpgeeker.ad.mysql.listener;
 
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
-import com.github.shyiko.mysql.binlog.event.Event;
-import com.github.shyiko.mysql.binlog.event.EventData;
-import com.github.shyiko.mysql.binlog.event.EventType;
-import com.github.shyiko.mysql.binlog.event.TableMapEventData;
+import com.github.shyiko.mysql.binlog.event.*;
 import github.zkpgeeker.ad.mysql.TemplateHolder;
 import github.zkpgeeker.ad.mysql.dto.BinlogRowData;
+import github.zkpgeeker.ad.mysql.dto.TableTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
+import java.io.Serializable;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @description:
@@ -86,8 +86,45 @@ public class AggregationListener implements BinaryLogClient.EventListener {
             this.tableName = "";
         }
     }
+
+    private List<Serializable[]> getAfterValues(EventData eventData) {
+        if (eventData instanceof WriteRowsEventData) {
+            return  ( (WriteRowsEventData) eventData).getRows();
+        }
+        if (eventData instanceof UpdateRowsEventData) {
+            return ((UpdateRowsEventData) eventData).getRows().stream()
+                    .map(Map.Entry::getValue).collect(Collectors.toList());
+        }
+        if (eventData instanceof DeleteRowsEventData) {
+            return ((DeleteRowsEventData) eventData).getRows();
+        }
+        return Collections.emptyList();
+    }
     
     private BinlogRowData buildRowData(EventData eventData) {
-        return null;
+        TableTemplate table = templateHolder.getTable(tableName);
+        if (null == table) {
+            log.warn("table {} not found", tableName);
+            return null;
+        }
+        List<Map<String, String>> afterMapList = new ArrayList<>();
+        for (Serializable[] after : getAfterValues(eventData)) {
+            Map<String, String> afterMap = new HashMap<>();
+            int colLen = after.length;
+            for (int ix = 0; ix < colLen; ix ++) {
+                String colName = table.getPosMap().get(ix);
+                if (null == colName) {
+                    log.debug("ignore position: {}", ix);
+                    continue;
+                }
+                String colValue = after[ix].toString();
+                afterMap.put(colName, colValue);
+            }
+            afterMapList.add(afterMap);
+        }
+        BinlogRowData rowData = new BinlogRowData();
+        rowData.setAfter(afterMapList);
+        rowData.setTable(table);
+        return rowData;
     }
 }

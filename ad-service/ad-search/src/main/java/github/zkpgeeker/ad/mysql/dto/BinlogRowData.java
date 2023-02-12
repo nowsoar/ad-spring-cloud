@@ -14,7 +14,7 @@ import java.util.Map;
 @Data
 public class BinlogRowData {
 
-    private TableTemplate tableTemplate;
+    private TableTemplate table;
 
     private EventType eventType;
 
